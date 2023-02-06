@@ -1,0 +1,22 @@
+Portal dockerhub, portal de imagens do dockerhub
+    hub.docker.com
+Comando para construir o docker    
+    docker build -t <nome> . ( exemplo: docker build -t web_apache . )    
+Comando para ver as imagens que existem
+    docker image ls    
+Comando para subir o conteiner
+    docker run -p 80:80 <nome> ( exemplo: docker run -p 80:80 web_apache )
+Comando para subir o conteiner e liberar o terminal
+    docker run -d -p 80:80 <nome>  ( exemplo: docker run -d -p 80:80 web_apache )
+comando para listar as imagens ativas
+    docker ps
+comando para finalizar a imagem
+    docker stop <id>   
+comando para subir um serviço do docker compose
+    docker-compose up <nome serviço> ( exemplo: docker-compose up db )
+comando para subir um serviço do docker compose e liberar o terminal
+    docker-compose up -d db ( exemplo: docker-compose up -d db )   
+comando para para o docker compose   
+    docker-compose down
+comando para listar os serviços ativas do docker-compose
+    docker-compose ps    
