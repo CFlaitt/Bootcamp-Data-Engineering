@@ -26,7 +26,7 @@ comando para listar os serviços ativas do docker-compose
 ### Conectar com a base de dados ( postgres )
 
 comando para criar ambiente virtual
-    virtualenv .virtualenv
+    virtualenv .venv
 comando para ativar o ambiente virtual
     source .venv/bin/activate
 comando instalar biblioteca python SQLAlchemy
