@@ -1,3 +1,5 @@
+### Docker
+
 Portal dockerhub, portal de imagens do dockerhub
     hub.docker.com
 Comando para construir o docker    
@@ -20,3 +22,17 @@ comando para para o docker compose
     docker-compose down
 comando para listar os serviços ativas do docker-compose
     docker-compose ps    
+
+### Conectar com a base de dados ( postgres )
+
+comando para criar ambiente virtual
+    virtualenv .virtualenv
+comando para ativar o ambiente virtual
+    source .venv/bin/activate
+comando instalar biblioteca python SQLAlchemy
+    pip install SQLAlchemy
+comando instalar biblioteca python psycopg2
+    pip install psycopg2
+    pip install psycopg2-binary
+comando instalar biblioteca python pandas
+    pip install pandas
