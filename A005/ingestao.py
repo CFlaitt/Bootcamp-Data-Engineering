@@ -1,5 +1,7 @@
 import datetime
 from abc import ABC, abstractmethod
+from typing import List
+import json
 
 import requests
 import logging
@@ -49,3 +51,38 @@ class tradesApi(mercadobitcoinApi):
             endpoint = f"{self.base_endpoint}/{self.coin}/{self.type}"       
 
         return endpoint
+
+class DataTypeNotSupportedForIngestionException(Exception):
+
+    def __init__(self, data):
+        self.data = data
+        self.message = f"Data type {type(data)} is not supported for ingestion"
+        super().__init__(self.message)
+
+
+class dataWriter:
+
+    def __init__(self, filename: str) -> None:
+        self.filename = filename
+
+    def _write_row(self, row: str) -> None:
+        with open(self.filename, "a") as f:
+            f.write(row)
+
+    def write(self, data: [List, dict]):
+        if isinstance(data, dict):
+            self._write_row(json.dumps(data) + "\n")
+        elif isinstance(data, List):
+            for element in data:
+                self.write(element)
+        else:
+            raise DataTypeNotSupportedForIngestionException(data)
+
+
+data = daySummaryApi("BTC").get_data(date=datetime.datetime(2021, 6, 20))
+writer = dataWriter('day_summary.json')
+writer.write(data)
+
+data = tradesApi("BTC").get_data()
+writer = dataWriter('trades.json')
+writer.write(data)
