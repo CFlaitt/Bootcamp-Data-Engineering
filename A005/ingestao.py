@@ -2,6 +2,7 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import List
 import json
+import os
 
 import requests
 import logging
@@ -52,7 +53,7 @@ class tradesApi(mercadobitcoinApi):
 
         return endpoint
 
-class DataTypeNotSupportedForIngestionException(Exception):
+class dataTypeNotSupportedForIngestionException(Exception):
 
     def __init__(self, data):
         self.data = data
@@ -62,10 +63,13 @@ class DataTypeNotSupportedForIngestionException(Exception):
 
 class dataWriter:
 
-    def __init__(self, filename: str) -> None:
-        self.filename = filename
+    def __init__(self, coin: str, api: str) -> None:        
+        self.api = api
+        self.coin = coin
+        self.filename = f"{self.api}/{self.coin}/{datetime.datetime.now()}.json"
 
     def _write_row(self, row: str) -> None:
+        os.makedirs(os.path.dirname(self.filename), exist_ok=True)
         with open(self.filename, "a") as f:
             f.write(row)
 
@@ -76,13 +80,32 @@ class dataWriter:
             for element in data:
                 self.write(element)
         else:
-            raise DataTypeNotSupportedForIngestionException(data)
+            raise dataTypeNotSupportedForIngestionException(data)
+
+class dataIngestor(ABC):
+
+    def __init__(self, writer: dataWriter, coins: List[str], default_start_date: datetime.date):
+        self.coins = coins
+        self.default_start_date = default_start_date
+        self.writer = writer
+
+    @abstractmethod
+    def ingest(self) -> None:
+        pass
+
+class daySummaryIngestor(dataIngestor):
+
+    def ingest(self) -> None:
+        date =self.default_start_date
+
+        if date < datetime.date.today():
+            for coin in self.coins:
+              
+                api = daySummaryApi(coin=coin)
+                data = api.get_data(date=date)
+                self.writer(coin=coin, api=api.type).write(data)
+                # atualizar = data
 
 
-data = daySummaryApi("BTC").get_data(date=datetime.datetime(2021, 6, 20))
-writer = dataWriter('day_summary.json')
-writer.write(data)
-
-data = tradesApi("BTC").get_data()
-writer = dataWriter('trades.json')
-writer.write(data)
+ingestor = daySummaryIngestor(writer=dataWriter, coins=["BTC","ETH","LTC"], default_start_date=datetime.date(2021, 6, 1))
+ingestor.ingest()
