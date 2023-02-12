@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from typing import List
 import json
 import os
+from schedule import repeat, every, run_pending
+import time
 
 import requests
 import logging
@@ -88,6 +90,16 @@ class dataIngestor(ABC):
         self.coins = coins
         self.default_start_date = default_start_date
         self.writer = writer
+        self._checkpoint = None
+
+    def _get_checkpoint(self):
+        if not self._checkpoint:
+            return self.default_start_date
+        else:
+            return self._checkpoint
+
+    def _updete_checkpoint(self, value):
+        self._checkpoint = value
 
     @abstractmethod
     def ingest(self) -> None:
@@ -96,16 +108,22 @@ class dataIngestor(ABC):
 class daySummaryIngestor(dataIngestor):
 
     def ingest(self) -> None:
-        date =self.default_start_date
+        date = self._get_checkpoint()
 
         if date < datetime.date.today():
-            for coin in self.coins:
-              
+            for coin in self.coins:              
                 api = daySummaryApi(coin=coin)
                 data = api.get_data(date=date)
                 self.writer(coin=coin, api=api.type).write(data)
-                # atualizar = data
+                self._updete_checkpoint(date + datetime.timedelta(days=1))
 
 
 ingestor = daySummaryIngestor(writer=dataWriter, coins=["BTC","ETH","LTC"], default_start_date=datetime.date(2021, 6, 1))
-ingestor.ingest()
+
+@repeat(every(1).seconds)
+def job():
+    ingestor.ingest()
+
+while True:
+    run_pending()
+    time.sleep(0.5)
